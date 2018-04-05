@@ -10,7 +10,6 @@
 
 package meckstss_Assignment08;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import fileReader.textFileReader;
@@ -19,15 +18,18 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		//Define String array with the word table spelled correctly but mixed case, and transposed a few different ways
-		/*String[] wordsToSpellCheck = new String[]{
-				"tAbLe", //case insensitive check
+		String[] wordsToSpellCheck = new String[]{
+				"tAbLe", // case insensitive check
 				"Table", // Init cap check
 				"table", // all lowercase check
+				"TABLE", // all Uppercase check
 				"tbale", // transpose 2nd and 3rd characters
-				"tabel", // transpose 4th and 5th characters, note this is a real word
-				"atble" // transpose 1st and 2nd characters
-				};*/
-		String[] wordsToSpellCheck = new String[] {"tbale"};
+				"tabel", // transpose 4th and 5th characters, note this is a real word in our list of words
+				"atble", // transpose 1st and 2nd characters
+				"ebtla", // Should be no match and return a zero length string
+				"fsih",	// from the assignment, should find Fish
+				"Puypp" // Should return a zero length string
+				};
 		
 		//Load the dictionary and instantiate textFileReader class object
 		textFileReader tf = new textFileReader("src/words.txt");

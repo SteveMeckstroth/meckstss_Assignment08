@@ -264,28 +264,40 @@ public class textFileReader {
 		String retVal = "";
 		String strSearch = "";
 		
-		
+		//Look in the words list to see if target exists
 		if (words.get(target.toUpperCase()) != null){
 			retVal = words.get(target.toUpperCase());
 		} else {
+			//Split the string into an array of each character
+			// () separates each matched result into its own array item
+			// ? match any single character
+			// !^ Each array item begins after the previous match ended
 			String[] c = target.split("(?!^)");
-			System.out.println("current target: " + target);
+
+			//iterate of the letters in target, and transpose one letter at a time to see if target was transposed
 			for (int i = 0; i < c.length; i++) {
 				strSearch = "";
 				
-				//If we are at least 2 characters into the string then add a prefix
-				System.out.println("i = " + i);
 				switch(i){
+				//First round search for the target directly
 				case 0:	strSearch = target;
 					break;
+				//Second and third round transpose first and 2nd char and then 2nd and 3rd char respectively 
+				//(needed to avoid index out of range errors)
 				case 1: strSearch += c[1] +  c[0] + target.substring(2);
 					break;
 				case 2: strSearch += c[0] + c[2] + c[1] + target.substring(3);
 					break;
-				default: strSearch += target.substring(0,i-2) +  c[i] + c[i-1] + target.substring(i+1); 
+				//thereafter transpose the series of chars until end of string
+				default: strSearch += target.substring(0,i-1) +  c[i] + c[i-1] + target.substring(i+1); 
 					break;
 				}
-				System.out.println("Search String: " + strSearch);
+				
+				//Search for a word in the dictionary that matches the transposed word
+				if (words.get(strSearch.toUpperCase()) != null){
+					retVal = words.get(strSearch.toUpperCase());
+					break; //Exit the for loop, we found a match!
+				}
 			}
 		}
 		return retVal;
