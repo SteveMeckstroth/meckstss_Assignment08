@@ -1,23 +1,30 @@
-/**Steve Meckstroth and Jennifer Palazzolo
- * Assignment07
- * Due Date: 03/06/2018
+/**Steve Meckstroth
+ * Assignment08
+ * Due Date: 04/03/2018
  * Computer Programming 2 IT 2045C/001/Spring2018
- * Citations: https://www.caveofprogramming.com/java/java-file-reading-and-writing-files-in-java.html
- * http://javarevisited.blogspot.com/2017/09/java-8-sorting-hashmap-by-values-in.html
- * https://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a/196834#196834
- * Calculates various statistics on a text file
+ * Citations: Modified code from https://github.com/meckstss/meckstss_Assignment07
+ * https://stackoverflow.com/questions/1066589/iterate-through-a-hashmap?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+ * Reads in a text file and offers several methods to perform actions with the data contained within
  */
 package fileReader;
 
+import java.awt.List;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Collections; 
 import java.util.LinkedHashMap; 
+import java.util.Map.Entry;
+
 import static java.util.stream.Collectors.*; 
 import static java.util.Map.Entry.*;
 
@@ -29,9 +36,9 @@ import static java.util.Map.Entry.*;
  *
  */
 public class textFileReader {
-	FileReader fileReader;
+	InputStreamReader fileReader;
 	String fileName = "";
-	ArrayList<String> words = new ArrayList<String>();
+	Map<String, String> words = new HashMap<String, String>();
 	
 	private String strMostCommonLetter = "";
 	private int intMostCommonLetterCnt = 0;
@@ -42,13 +49,13 @@ public class textFileReader {
 	private String strLongestWord = "";
 	private int intLongestWord = 0;
 	
-	public textFileReader (String fileName) throws FileNotFoundException{
+	public textFileReader (String fileName) throws FileNotFoundException, UnsupportedEncodingException{
 		this.fileName = fileName;
 		openTextFile();
 	}
 	
-	private void openTextFile() throws FileNotFoundException{
-		fileReader = new FileReader(fileName);
+	private void openTextFile() throws FileNotFoundException, UnsupportedEncodingException{
+		fileReader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
 	}
 	
 	public void readTextFile() throws IOException{
@@ -60,7 +67,7 @@ public class textFileReader {
         
         
 		while((line = bufferedReader.readLine()) != null) {
-            words.add(line);
+            words.put(line.toUpperCase(), line);
         }   
 		
 		 // Always close files.
@@ -73,11 +80,13 @@ public class textFileReader {
 	private void commonLetter(){
 		
 		Map<String, Integer> letters = new HashMap<String, Integer>();
-		
+		Iterator<Entry<String, String>> it = words.entrySet().iterator();
 		//iterate over the words array, and then each letter for each word, collect counts for each letter into the letters HashMap
-		for(int i = 0; i < words.size(); i++){
-			for (int j = 0; j < words.get(i).length(); j++){
-				String c =  String.valueOf(words.get(i).charAt(j));
+		
+		while (it.hasNext()){
+			Entry<String, String> pair = it.next();
+			for (int j = 0; j < pair.getValue().length(); j++){
+				String c =  String.valueOf(pair.getValue().charAt(j));
 				if (letters.get(c) != null){
 					letters.put(c, letters.get(c) + 1);
 				} else {
@@ -176,18 +185,20 @@ public class textFileReader {
 	 * Calculate Average word length, and longest word lenght, and shortest word length
 	 */
 	private void calculateWordCounts(){
+		Iterator<Entry<String, String>> it = words.entrySet().iterator();
 		
 		int wordLengthTotal = 0;
 		//iterate over the words array, and sum the length of all of the words
-		for(int i = 0; i < words.size(); i++){
-			 wordLengthTotal += words.get(i).length();
-			 if (words.get(i).length() > intLongestWord){
-				 setStrLongestWord(words.get(i));
-				 setIntLongestWord(words.get(i).length());
+		while (it.hasNext()){
+			Entry<String, String> pair = it.next();
+			 wordLengthTotal += pair.getValue().length();
+			 if (pair.getValue().length() > intLongestWord){
+				 setStrLongestWord(pair.getValue());
+				 setIntLongestWord(pair.getValue().length());
 			 }
 		}
 		//Set the class variable for average word length, and round to 2 decimals
-		avgWordLength = ((double) words.size()) / wordLengthTotal;
+		avgWordLength = wordLengthTotal / ((double) words.size()) ;
 		avgWordLength = Math.round(avgWordLength*100.0)/100.0;
 		
 	}
@@ -241,5 +252,42 @@ public class textFileReader {
 	 */
 	private void setIntLongestWord(int intLongestWord) {
 		this.intLongestWord = intLongestWord;
+	}
+	/**
+	 * Checks the spelling of the target word provided against a dictionary.  
+	 * If matched it returns the match, if not it returns a suggestion of a possible transposed word.  
+	 * Else returns empty string. 
+	 * @param target
+	 * @return
+	 */
+	public String checkSpelling(String target) {
+		String retVal = "";
+		String strSearch = "";
+		
+		
+		if (words.get(target.toUpperCase()) != null){
+			retVal = words.get(target.toUpperCase());
+		} else {
+			String[] c = target.split("(?!^)");
+			System.out.println("current target: " + target);
+			for (int i = 0; i < c.length; i++) {
+				strSearch = "";
+				
+				//If we are at least 2 characters into the string then add a prefix
+				System.out.println("i = " + i);
+				switch(i){
+				case 0:	strSearch = target;
+					break;
+				case 1: strSearch += c[1] +  c[0] + target.substring(2);
+					break;
+				case 2: strSearch += c[0] + c[2] + c[1] + target.substring(3);
+					break;
+				default: strSearch += target.substring(0,i-2) +  c[i] + c[i-1] + target.substring(i+1); 
+					break;
+				}
+				System.out.println("Search String: " + strSearch);
+			}
+		}
+		return retVal;
 	}
 }
